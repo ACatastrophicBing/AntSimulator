@@ -26,13 +26,13 @@
 * @param counter_pheromone:: Will the ants secret counter pheromone?
 * @param hell_phermn_intensity_multiplier:: multiplier for the intensity of TO_HELL pheromone
 */
-const bool DISPLAY_GUI = false;
+const bool DISPLAY_GUI = true;
 const int SIMULATION_STEPS = 50000;		// Only used in the data recording, NOT IN GUI
 const int SIMULATION_ITERATIONS = 100;
 float malicious_fraction = std::pow(2,-2);
 int dilusion_max = 500;
 int malicious_timer_wait = 100;	
-bool malicious_ants_focus = true;
+bool malicious_ants_focus = false;
 AntTracingPattern ant_tracing_pattern = AntTracingPattern::FOOD;
 bool counter_pheromone = true;
 float hell_phermn_intensity_multiplier = 1;
