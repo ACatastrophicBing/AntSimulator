@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <list>
+#include <random>
 #include "ant.hpp"
 #include "utils.hpp"
 #include "world.hpp"
@@ -61,7 +62,16 @@ struct Colony
           else
             angle = getRandRange(2.0f * PI); // Sets even distribution
 
-          ants.emplace_back(x, y, angle, false, true, ant_tracing_pattern, hell_phermn_intensity_multiplier); 
+          /* Placement of Malicious ants */
+          std::random_device rd;  // Will be used to obtain a seed for the random number engine
+          std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+          std::uniform_real_distribution<> disx(0.0, Conf::WIN_WIDTH);
+          std::uniform_real_distribution<> disy(0.0, Conf::WIN_HEIGHT);
+          float x_malicious = (float)disx(gen);
+          float y_malicious = (float)disy(gen);
+          // TODO : Identify if a position is valid in world
+
+          ants.emplace_back(x_malicious, y_malicious, angle, false, true, ant_tracing_pattern, hell_phermn_intensity_multiplier); 
 
           const uint64_t index = 4 * i;
           ants_va[index + 0].color = Conf::MALICIOUS_ANT_COLOR;
