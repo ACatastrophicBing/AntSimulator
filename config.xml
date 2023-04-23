@@ -14,7 +14,7 @@
     </total_ants>
     <patience>
         <activate bool="true" /> <!-- activate patience/cautionary pheromone secretion-->
-        <refill_period_range str_arr="5 10 100 500" /> <!-- period to reach max refill amount, in units of timesteps; multiple values possible (space delimited) -->
+        <refill_period_range str_arr="100 500" /> <!-- period to reach max refill amount, in units of timesteps; multiple values possible (space delimited) -->
         <max_range str_arr="50" /> <!-- maximum patience/cautionary pheromone possible; multiple values possible (space delimited) -->
         <pheromone_evaporation_multiplier float="1000" /> <!-- patience/cautionary pheromone evaporation rate -->
     </patience>

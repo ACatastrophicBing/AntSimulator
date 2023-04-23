@@ -159,6 +159,7 @@ struct Ant
 			markers_count = 0.0f;
 		}
 	}
+
 	bool nearColony(const sf::Vector2f colony_position, float atol = 15.0f){
 		if (getLength(position - colony_position) < colony_size + atol) {
 			if (phase == Mode::ToFood) {
@@ -167,6 +168,7 @@ struct Ant
 		}
 		return false;
 	}
+	
 	void findMarker(World& world, float dt)
 	{
 		// Init

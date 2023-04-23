@@ -189,8 +189,8 @@ void loadUserConf()
 
 		// Get malicious ants settings
 		tinyxml2::XMLElement *malicious_element = root->FirstChildElement("malicious_ants");
-		sim_config.malicious_fraction_food = malicious_element->FirstChildElement("food_fraction")->FloatAttribute("float");
-		sim_config.malicious_fraction_home = malicious_element->FirstChildElement("home_fraction")->FloatAttribute("float");
+		sim_config.malicious_fraction_food = malicious_element->FirstChildElement("fraction_food")->FloatAttribute("float");
+		sim_config.malicious_fraction_home = malicious_element->FirstChildElement("fraction_home")->FloatAttribute("float");
 		sim_config.malicious_focus = malicious_element->FirstChildElement("focus")->BoolAttribute("bool");
 		sim_config.malicious_timer_wait = malicious_element->FirstChildElement("timer")->IntAttribute("int");
 		sim_config.malicious_intensity_mult = malicious_element->FirstChildElement("pheromone_intensity_multiplier")->FloatAttribute("float");
@@ -430,11 +430,16 @@ void displaySimulation()
 
 int main()
 {
+	printf("Main starts\n");
 	Conf::loadTextures();
-
+	printf("Textures load\n");
 	loadUserConf();
-	if (sim_config.gui_display)
+	printf("User config loads\n");
+
+	if (sim_config.gui_display){
+		printf("We are dislpaying the simulation\n");
 		displaySimulation();
+	}
 	else
 		simulateAnts();
 
