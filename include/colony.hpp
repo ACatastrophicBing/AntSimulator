@@ -16,14 +16,15 @@ struct Colony
    * @param x Colony X position
    * @param y Colony Y position
    * @param n Colony Number of ants
-   * @param mal_prob Probability of an ant being malicious (fraction of ants being malicious)
+   * @param mal_prob_food Probability of an ant being malicious placing down false food (fraction of ants being malicious)
+   * @param mal_prob_home Probability of an ant being malicious placing down false home (fraction of ants being malicious)
    * @param mal_timer_delay Delay after which the attack is launched
    * @param malicious_ants_focus  Should the attack be focused towards food
    * @param ant_tracing_pattern   Should malicious ants trace food pheromone or roam randomly
 	 * @param counter_pheromone Will the ants secret counter pheromone?
 	 * @param hell_phermn_intensity_multiplier multiplier for the intensity of TO_HELL pheromone
    */
-	Colony(float x, float y, uint32_t n, float mal_prob, int mal_timer_delay, bool malicious_ants_focus = true, 
+	Colony(float x, float y, uint32_t n, float mal_prob_food, float mal_prob_home, int mal_timer_delay, bool malicious_ants_focus = true, 
           AntTracingPattern ant_tracing_pattern = AntTracingPattern::RANDOM, bool counter_pheromone = false,
           float hell_phermn_intensity_multiplier = 1.0)
 		: position(x, y)
@@ -38,7 +39,7 @@ struct Colony
       // std::cout<<"Normal";
 
     for (uint64_t i(0); i < n; ++i) {
-      if(i >= mal_prob*n)
+      if(i >= (mal_prob_home + mal_prob_food)*n)
       {
         ants.emplace_back(x, y, getRandRange(2.0f * PI), counter_pheromone);
 
@@ -61,17 +62,46 @@ struct Colony
             angle = -3*PI/4;
           else
             angle = getRandRange(2.0f * PI); // Sets even distribution
+          
 
           /* Placement of Malicious ants */
-          std::random_device rd;  // Will be used to obtain a seed for the random number engine
-          std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
-          std::uniform_real_distribution<> disx(0.0, Conf::WIN_WIDTH);
-          std::uniform_real_distribution<> disy(0.0, Conf::WIN_HEIGHT);
-          float x_malicious = (float)disx(gen);
-          float y_malicious = (float)disy(gen);
+          float x_malicious = x;
+          float y_malicious = y;
+          bool is_Valid = false;
+          // while(!is_Valid) {
+          // if(Conf::UNIFORM){ /* TOFO : add something to the config file to select a placement scheme*/
+            std::random_device rd;  // Will be used to obtain a seed for the random number engine
+            std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+            std::uniform_real_distribution<> disx(0.0, Conf::WIN_WIDTH);
+            std::uniform_real_distribution<> disy(0.0, Conf::WIN_HEIGHT);
+            x_malicious = (float)disx(gen);
+            y_malicious = (float)disy(gen);
+          // }
+
+          // if(Conf::CONCENTRATED){ // TODO : Also add UNIFORM, UNIFORM_RADIUS, MAL_HOME_X, MAL_HOME_Y, TARGETED
+          //   x_malicious = Conf::MAL_HOME_X;
+          //   y_malicious = Conf::MAL_HOME_Y;
+          //   if(Conf::UNIFORM){
+          //     std::random_device rd;  // Will be used to obtain a seed for the random number engine
+          //     std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+          //     std::uniform_real_distribution<> disx(0.0, x + Conf::UNIFORM_RADIUS);
+          //     std::uniform_real_distribution<> disy(0.0, 360.0);
+          //     // TODO : find the vector location of the above
+          //     x_malicious = x_malicious;
+          //     y_malicious = y_malicious;
+          //   }
+          // }
+            
+          // is_Valid = true;
           // TODO : Identify if a position is valid in world
 
-          ants.emplace_back(x_malicious, y_malicious, angle, false, true, ant_tracing_pattern, hell_phermn_intensity_multiplier); 
+          // }
+          if(i <= mal_prob_food*n) {// Place malicious food ant
+            ants.emplace_back(x_malicious, y_malicious, angle, false, true, false, ant_tracing_pattern, hell_phermn_intensity_multiplier); 
+          }
+          else if(i <= (mal_prob_home + mal_prob_food)*n) {// Place malicious home ant
+            ants.emplace_back(x_malicious, y_malicious, angle, false, false, true, ant_tracing_pattern, hell_phermn_intensity_multiplier);
+          } 
 
           const uint64_t index = 4 * i;
           ants_va[index + 0].color = Conf::MALICIOUS_ANT_COLOR;

@@ -23,7 +23,8 @@
  * @param sim_config.sim_steps:: Number of steps of simulation (Will not be in effect for GUI)
  * @param sim_config.sim_iterations:: Run the same configured iteration these number of times
  * @param sim_config.total_ant_number:: Total number of ants in the simulation
- * @param sim_config.malicious_fraction:: Probability of an ant being malicious (fraction of ants being malicious)
+ * @param sim_config.malicious_fraction_food:: Probability of an ant being malicious falsifying food(fraction of ants being malicious food)
+ * @param sim_config.malicious_fraction_home:: Probability of an ant being malicious falsifying gome(fraction of ants being malicious home)
  * @param sim_config.malicious_timer_wait:: Delay after which the attack is launched
  * @param sim_config.malicious_focus::  Should the attack be focused towards food
  * @param sim_config.malicious_tracing_pattern::   Should malicious ants trace food pheromone or roam randomly
@@ -108,7 +109,9 @@ struct SimulationConfiguration
 
 	int malicious_timer_wait = 100;
 
-	float malicious_fraction = 1e-2;
+	float malicious_fraction_food = 1e-2;
+
+	float malicious_fraction_home = 1e-2;
 
 	float malicious_intensity_mult = 1;
 
@@ -128,18 +131,19 @@ std::string getExperimentSpecificName(int iteration)
 	std::string DISPLAY_GUI_string = "_DISPLAY_GUI-" + std::to_string(sim_config.gui_display);
 	std::string SIMULATION_STEPS_string = "_SIM_STEPS-" + std::to_string(sim_config.sim_steps);
 	std::string SIMULATION_ITERATIONS_string = "_SIM_ITERS-" + std::to_string(sim_config.sim_iterations);
-	std::string malicious_fraction_string = "_mal_frac-" + std::to_string(sim_config.malicious_fraction);
+	std::string malicious_fraction_food_string = "_mal_frac_food-" + std::to_string(sim_config.malicious_fraction_food);
+	std::string malicious_fraction_home_string = "_mal_frac_home-" + std::to_string(sim_config.malicious_fraction_home);
 	std::string malicious_timer_wait_string = "_mal_delay-" + std::to_string(sim_config.malicious_timer_wait);
 	std::string malicious_ants_focus_string = "_mal_ants_focus-" + std::to_string(sim_config.malicious_focus);
 	std::string ant_tracing_pattern_string = "_ant_tracing-" + std::to_string(sim_config.malicious_tracing_pattern);
 	std::string counter_pheromone_string = "_ctr_pherm-" + std::to_string(sim_config.patience_activation);
 	std::string hell_phermn_intensity_multiplier_string = "_hell_phermn_intens-" + std::to_string(sim_config.malicious_intensity_mult);
 	std::string hell_phermn_evpr_multi_string = "_hell_phermn_evpr-" + std::to_string(sim_config.malicious_evaporation_mult);
-	std::string dilusion_max_string = "_dil_max-" + std::to_string(*sim_config.patience_max_val_itr);
-	std::string dilusion_increment_string = "_dil_incr-" + std::to_string(*sim_config.patience_refill_period_itr);
+	std::string delusion_max_string = "_del_max-" + std::to_string(*sim_config.patience_max_val_itr);
+	std::string delusion_increment_string = "_del_incr-" + std::to_string(*sim_config.patience_refill_period_itr);
 	std::string iteration_string = "_iter-" + std::to_string(iteration);
 
-	return SIMULATION_STEPS_string + SIMULATION_ITERATIONS_string + malicious_fraction_string + malicious_timer_wait_string + malicious_ants_focus_string + ant_tracing_pattern_string + counter_pheromone_string + hell_phermn_intensity_multiplier_string + hell_phermn_evpr_multi_string + dilusion_max_string + dilusion_increment_string + iteration_string;
+	return SIMULATION_STEPS_string + SIMULATION_ITERATIONS_string + malicious_fraction_food_string + malicious_fraction_home_string + malicious_timer_wait_string + malicious_ants_focus_string + ant_tracing_pattern_string + counter_pheromone_string + hell_phermn_intensity_multiplier_string + hell_phermn_evpr_multi_string + delusion_max_string + delusion_increment_string + iteration_string;
 }
 
 void loadUserConf()
@@ -185,7 +189,8 @@ void loadUserConf()
 
 		// Get malicious ants settings
 		tinyxml2::XMLElement *malicious_element = root->FirstChildElement("malicious_ants");
-		sim_config.malicious_fraction = malicious_element->FirstChildElement("fraction")->FloatAttribute("float");
+		sim_config.malicious_fraction_food = malicious_element->FirstChildElement("food_fraction")->FloatAttribute("float");
+		sim_config.malicious_fraction_home = malicious_element->FirstChildElement("home_fraction")->FloatAttribute("float");
 		sim_config.malicious_focus = malicious_element->FirstChildElement("focus")->BoolAttribute("bool");
 		sim_config.malicious_timer_wait = malicious_element->FirstChildElement("timer")->IntAttribute("int");
 		sim_config.malicious_intensity_mult = malicious_element->FirstChildElement("pheromone_intensity_multiplier")->FloatAttribute("float");
@@ -209,8 +214,8 @@ void setStaticVariables()
 {
 	WorldCell::setHellPhermnEvprMulti(sim_config.malicious_evaporation_mult);
 	Ant::resetFoodBitsCounters();
-	Ant::setDilusionMax(*sim_config.patience_max_val_itr);
-	Ant::setDilusionIncrement((*sim_config.patience_max_val_itr) / (*sim_config.patience_refill_period_itr));
+	Ant::setDelusionMax(*sim_config.patience_max_val_itr);
+	Ant::setDelusionIncrement((*sim_config.patience_max_val_itr) / (*sim_config.patience_refill_period_itr));
 }
 
 void initWorld(World &world, Colony &colony)
@@ -283,9 +288,11 @@ void oneExperiment(int i)
 
 	setStaticVariables();
 	World world(Conf::WORLD_WIDTH, Conf::WORLD_HEIGHT);
+	printf("Making the colony\n");
 	Colony colony(Conf::COLONY_POSITION.x,
 				  Conf::COLONY_POSITION.y, Conf::ANTS_COUNT,
-				  sim_config.malicious_fraction,
+				  sim_config.malicious_fraction_food,
+				  sim_config.malicious_fraction_home,
 				  sim_config.malicious_timer_wait,
 				  sim_config.malicious_focus,
 				  sim_config.malicious_tracing_pattern,
@@ -349,12 +356,14 @@ void simulateAnts()
 
 void displaySimulation()
 {
+	printf("Making the colony\n");
 	setStaticVariables();
 	World world(Conf::WORLD_WIDTH, Conf::WORLD_HEIGHT);
 	Colony colony(Conf::COLONY_POSITION.x,
 				  Conf::COLONY_POSITION.y,
 				  Conf::ANTS_COUNT,
-				  sim_config.malicious_fraction,
+				  sim_config.malicious_fraction_food,
+				  sim_config.malicious_fraction_home,
 				  sim_config.malicious_timer_wait,
 				  sim_config.malicious_focus,
 				  sim_config.malicious_tracing_pattern,

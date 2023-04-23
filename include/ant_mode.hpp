@@ -9,7 +9,7 @@ enum class Mode : uint32_t
 	ToHell = 2,
 	CounterPhr = 3,
 	ToHellAndBack = 4,
-	CounterPhr2 = 5,
+	CounterPhrBack = 5
 };
 
 enum AntTracingPattern

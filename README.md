@@ -90,7 +90,8 @@ After building the project, populate the configuration file `config.xml` as foll
     <malicious_ants>
         <!-- Fraction of malicious ants out of the total number of ants -->
         <!-- Options: a floating point value between (inclusive) 0 to 1 -->
-        <fraction float="0.125" />
+        <fraction_food float="0.15" /> <!-- fraction of ants that are malicious falsifying food -->
+        <fraction_home float="0.0" /> <!-- fraction of ants that are malicious falsifying home -->
 
         <!-- Directional focus (by malicious ants, towards the food source) activation -->
         <!-- Options: "true", "false" -->

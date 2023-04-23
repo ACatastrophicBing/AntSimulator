@@ -21,12 +21,13 @@ struct Ant
 	 * @param y Colony Y position
 	 * @param angle Starting angle of the ant (wrt colony)
 	 * @param counter_pheromone_arg Will the ants secret counter pheromone?
-	 * @param malicious is the current ant malicious?
+	 * @param malicious_food is the current ant malicious?
+	 * @param malicious_home is the current ant malicious?
 	 * @param ant_tracing_pattern_arg Should malicious ants trace food pheromone or roam randomly
 	 * @param hell_phermn_intensity_multiplier_arg multiplier for the intensity of TO_HELL pheromone
 	 */
 	Ant(float x, float y, float angle, bool counter_pheromone_arg = false,
-		bool malicious=false, AntTracingPattern ant_tracing_pattern_arg = AntTracingPattern::RANDOM, float hell_phermn_intensity_multiplier_arg = 1.0)
+		bool malicious_food=false, bool malicious_home=false, AntTracingPattern ant_tracing_pattern_arg = AntTracingPattern::RANDOM, float hell_phermn_intensity_multiplier_arg = 1.0)
 		: position(x, y)
 		, direction(angle)
 		, last_direction_update(RNGf::getUnder(1.0f) * direction_update_period)
@@ -35,16 +36,17 @@ struct Ant
 		, liberty_coef(RNGf::getRange(0.0001f, 0.001f))
 		, hits(0)
 		, markers_count(0.0f)
-	    , is_malicious(malicious)
-		, dilusion_counter(DILUSION_MAX)
-		, dilusion_patience_threshold(200)
+	    , is_malicious_food(malicious_food)
+	    , is_malicious_home(malicious_home)
+		, delusion_counter(DELUSION_MAX)
+		, delusion_patience_threshold(200)
 		, counter_thresh(850)
 		, ant_tracing_pattern(ant_tracing_pattern_arg)
 		, counter_pheromone(counter_pheromone_arg)
 		, hell_phermn_intensity_multiplier(hell_phermn_intensity_multiplier_arg)
 	{
 		static bool mal_ant_counted;
-		if(is_malicious)
+		if(is_malicious_food || is_malicious_home)
 			if(!mal_ant_counted)
 			{
 				mal_ant_counted = true;
@@ -55,8 +57,11 @@ struct Ant
 	void update(const float dt, World& world, bool wreak_havoc)
 	{
 		updatePosition(world, dt);
-		if(is_malicious && wreak_havoc)
-		phase = Mode::ToHell;
+		if(is_malicious_food && wreak_havoc)
+			phase = Mode::ToHell;
+
+		if(is_malicious_home && wreak_havoc)
+			phase = Mode::ToHellAndBack;
 
 		if (phase == Mode::ToFood) {
 			checkFood(world);
@@ -108,9 +113,8 @@ struct Ant
 			phase = Mode::ToHome;
 			direction.addNow(PI);
 			world.markers.pickFood(position);
-			// if(!is_malicious) 
-				markers_count = 0.0f;
-			dilusion_counter = DILUSION_MAX;
+			markers_count = 0.0f;
+			delusion_counter = DELUSION_MAX;
 			food_bits_taken_counter++;
 			found_food = true;
 			return;
@@ -133,14 +137,14 @@ struct Ant
 		food_bits_delivered_counter = 0;
 	}
 
-	static void setDilusionMax(float max_value)
+	static void setDelusionMax(float max_value)
 	{
-		DILUSION_MAX = max_value;
+		DELUSION_MAX = max_value;
 	}
 
-	static void setDilusionIncrement(float increment_value)
+	static void setDelusionIncrement(float increment_value)
 	{
-		DILUSION_INCREMENT = increment_value;
+		DELUSION_INCREMENT = increment_value;
 	}
 
 	void checkColony(const sf::Vector2f colony_position)
@@ -152,8 +156,7 @@ struct Ant
 				food_bits_delivered_counter++;
 				delivered_food_home = true;
 			}
-			// if(!is_malicious)
-				markers_count = 0.0f;
+			markers_count = 0.0f;
 		}
 	}
 	bool nearColony(const sf::Vector2f colony_position, float atol = 15.0f){
@@ -192,7 +195,7 @@ struct Ant
 			}
 			// Check for the most intense marker
 			float intensity;
-			if(phase == Mode::ToHell)
+			if(phase == Mode::ToHell) // Malicious food ants
 			{
 				float value_1, value_2;
 				if(ant_tracing_pattern == AntTracingPattern::RANDOM)
@@ -204,15 +207,14 @@ struct Ant
 				{
 					value_1 = cell->intensity[static_cast<uint32_t>(Mode::ToFood)];
 					value_2 = cell->intensity[static_cast<uint32_t>(Mode::ToHell)];
-				}
-				else
+				} else
 				{
 					value_1 = cell->intensity[static_cast<uint32_t>(Mode::ToHome)];
 					value_2 = 0;//cell->intensity[static_cast<uint32_t>(Mode::ToHell)];
 				}
 				intensity = std::max(value_1, value_2);
 			}
-			else if(phase == Mode::ToFood)
+			else if(phase == Mode::ToFood) // False food checker
 			{
 				float temp_intensity = 0;
 				float value_1 = cell->intensity[static_cast<uint32_t>(Mode::ToFood)];
@@ -226,8 +228,23 @@ struct Ant
 				else
 					intensity = 0;
 			}
-			else
+			else if(phase == Mode::ToHome){ // False home checker
+				float temp_intensity = 0;
+				float value_1 = cell->intensity[static_cast<uint32_t>(Mode::ToHome)];
+				float value_2 = cell->intensity[static_cast<uint32_t>(Mode::ToHellAndBack)];
+				// float ctr_phrmn_intns = cell->intensity[static_cast<uint32_t>(Mode::CounterPhr)];
+				float ctr_phrmn_intns = cell->intensity[static_cast<uint32_t>(Mode::CounterPhrBack)];
+				temp_intensity = std::max(value_1, value_2);
+				
+				if (ctr_phrmn_intns < temp_intensity)
+					intensity = temp_intensity;
+				else
+					intensity = 0;
+			} 
+			else {
 				intensity = cell->intensity[static_cast<uint32_t>(phase)];
+			}
+			
 			
 			if (intensity > max_intensity) {
 				max_intensity = intensity;
@@ -249,17 +266,29 @@ struct Ant
 				{
 					// std::cout<<"Okay";
 					const float coef = 0.01f;
-					dilusion_counter = dilusion_counter > 0 ? dilusion_counter - 1.0f : 0;
-					const float intensity = 1000.0f * exp(-coef * (dilusion_counter));
+					delusion_counter = delusion_counter > 0 ? delusion_counter - 1.0f : 0;
+					const float intensity = 1000.0f * exp(-coef * (delusion_counter));
 					world.addMarker(position, Mode::CounterPhr, intensity);
+					// std::cout<<intensity<<" ";
+				}
+			}
+			else if (RNGf::proba(0.4f) && (phase == Mode::ToHome)) {
+				max_cell->intensity[static_cast<uint32_t>(phase)] *= 0.99f;
+				if (counter_pheromone)
+				{
+					// std::cout<<"Okay";
+					const float coef = 0.01f;
+					delusion_counter = delusion_counter > 0 ? delusion_counter - 1.0f : 0;
+					const float intensity = 1000.0f * exp(-coef * (delusion_counter));
+					world.addMarker(position, Mode::CounterPhrBack, intensity);
 					// std::cout<<intensity<<" ";
 				}
 			}
 			direction = getAngle(max_direction);
 		}
 		else
-			// dilusion_counter = DILUSION_MAX;
-			dilusion_counter = std::min(DILUSION_MAX, dilusion_counter+DILUSION_INCREMENT);
+			// delusion_counter = DELUSION_MAX;
+			delusion_counter = std::min(DELUSION_MAX, delusion_counter+DELUSION_INCREMENT);
 	}
 
 	void addMarker(World& world)
@@ -337,19 +366,20 @@ struct Ant
 	float markers_count;
 	float last_marker;
 	float liberty_coef;
-	float dilusion_counter;
-	inline static float DILUSION_MAX;
-	float dilusion_patience_threshold;
-	float markers_count_dilusion;
+	float delusion_counter;
+	inline static float DELUSION_MAX;
+	float delusion_patience_threshold;
+	float markers_count_delusion;
 	float counter_thresh;
-	bool is_malicious;
+	bool is_malicious_food;
+	bool is_malicious_home;
 	bool malicious_ants_focus;
 	AntTracingPattern ant_tracing_pattern;
 	bool counter_pheromone;
 	float hell_phermn_intensity_multiplier;
 	inline static int food_bits_taken_counter;
 	inline static int food_bits_delivered_counter;
-	inline static float DILUSION_INCREMENT;
+	inline static float DELUSION_INCREMENT;
 	bool found_food = false;
 	bool delivered_food_home = false;
 	bool first_mal_ant = false;

@@ -19,7 +19,8 @@
         <pheromone_evaporation_multiplier float="1000" /> <!-- patience/cautionary pheromone evaporation rate -->
     </patience>
     <malicious_ants>
-        <fraction float="0.02" /> <!-- fraction of ants that are malicious -->
+        <fraction_food float="0.02" /> <!-- fraction of ants that are malicious falsifying food -->
+        <fraction_home float="0.02" /> <!-- fraction of ants that are malicious falsifying home -->
         <focus bool="false" /> <!-- activate malicious ants' focus on the food source -->
         <timer int="100" /> <!-- delay after which the attack is launched -->
         <pheromone_intensity_multiplier float="1" /> <!-- fake food pheromone intensity factor -->
