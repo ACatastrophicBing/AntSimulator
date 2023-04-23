@@ -14,6 +14,8 @@ struct DefaultConf
 	const static sf::Color TO_HOME_COLOR;
 	const static sf::Color TO_HELL_COLOR;
 	const static sf::Color COUNTER_PHR_COLOR;
+	const static sf::Color TO_HELL_AND_BACK_COLOR;
+	const static sf::Color COUNTER_PHR_BACK_COLOR;
 	const static sf::Color COLONY_COLOR;
 	const static sf::Color WALL_COLOR;
 	static float COLONY_SIZE;
@@ -57,6 +59,10 @@ template<typename T>
 const sf::Color DefaultConf<T>::TO_HELL_COLOR = sf::Color(153, 73, 68);
 template<typename T>
 const sf::Color DefaultConf<T>::COUNTER_PHR_COLOR = sf::Color(255, 255, 10);
+template<typename T>
+const sf::Color DefaultConf<T>::TO_HELL_AND_BACK_COLOR = sf::Color(255, 0x69, 180);
+template<typename T>
+const sf::Color DefaultConf<T>::COUNTER_PHR_BACK_COLOR = sf::Color(255, 165, 0);
 template<typename T>
 const sf::Color DefaultConf<T>::COLONY_COLOR = DefaultConf<T>::ANT_COLOR;
 template<typename T>

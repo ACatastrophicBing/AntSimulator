@@ -168,7 +168,7 @@ struct Ant
 		}
 		return false;
 	}
-	
+
 	void findMarker(World& world, float dt)
 	{
 		// Init
@@ -212,6 +212,25 @@ struct Ant
 				} else
 				{
 					value_1 = cell->intensity[static_cast<uint32_t>(Mode::ToHome)];
+					value_2 = 0;//cell->intensity[static_cast<uint32_t>(Mode::ToHell)];
+				}
+				intensity = std::max(value_1, value_2);
+			}
+			else if(phase == Mode::ToHellAndBack) // Malicious home ants
+			{
+				float value_1, value_2;
+				if(ant_tracing_pattern == AntTracingPattern::RANDOM)
+				{
+					value_1 = 0;
+					value_2 = 0;
+				}
+				else if(ant_tracing_pattern == AntTracingPattern::HOME)
+				{
+					value_1 = cell->intensity[static_cast<uint32_t>(Mode::ToHome)];
+					value_2 = cell->intensity[static_cast<uint32_t>(Mode::ToHellAndBack)];
+				} else
+				{
+					value_1 = cell->intensity[static_cast<uint32_t>(Mode::ToFood)];
 					value_2 = 0;//cell->intensity[static_cast<uint32_t>(Mode::ToHell)];
 				}
 				intensity = std::max(value_1, value_2);
@@ -302,6 +321,15 @@ struct Ant
 		if(phase == Mode::ToHell)
 		{
 			trace = Mode::ToHell;
+			intensity *= hell_phermn_intensity_multiplier;
+			// if(first_mal_ant)
+			// 	std::cout<<markers_count<<"  ";
+			// intensity = 1000.0f * hell_phermn_intensity_multiplier;
+			// std::cout<<intensity<<"  ";
+		}
+		else if(phase == Mode::ToHellAndBack)
+		{
+			trace = Mode::ToHellAndBack;
 			intensity *= hell_phermn_intensity_multiplier;
 			// if(first_mal_ant)
 			// 	std::cout<<markers_count<<"  ";

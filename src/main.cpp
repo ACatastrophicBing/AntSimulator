@@ -288,7 +288,7 @@ void oneExperiment(int i)
 
 	setStaticVariables();
 	World world(Conf::WORLD_WIDTH, Conf::WORLD_HEIGHT);
-	printf("Making the colony\n");
+	// printf("Making the colony\n");
 	Colony colony(Conf::COLONY_POSITION.x,
 				  Conf::COLONY_POSITION.y, Conf::ANTS_COUNT,
 				  sim_config.malicious_fraction_food,
@@ -356,7 +356,7 @@ void simulateAnts()
 
 void displaySimulation()
 {
-	printf("Making the colony\n");
+	// printf("Making the colony\n");
 	setStaticVariables();
 	World world(Conf::WORLD_WIDTH, Conf::WORLD_HEIGHT);
 	Colony colony(Conf::COLONY_POSITION.x,
@@ -430,14 +430,14 @@ void displaySimulation()
 
 int main()
 {
-	printf("Main starts\n");
+	// printf("Main starts\n");
 	Conf::loadTextures();
-	printf("Textures load\n");
+	// printf("Textures load\n");
 	loadUserConf();
-	printf("User config loads\n");
+	// printf("User config loads\n");
 
 	if (sim_config.gui_display){
-		printf("We are dislpaying the simulation\n");
+		// printf("We are dislpaying the simulation\n");
 		displaySimulation();
 	}
 	else
