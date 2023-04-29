@@ -39,7 +39,7 @@ struct Ant
 	    , is_malicious_food(malicious_food)
 	    , is_malicious_home(malicious_home)
 		, delusion_counter(DELUSION_MAX)
-		, delusion_patience_threshold(200)
+		, delusion_patience_threshold(600)
 		, counter_thresh(850)
 		, ant_tracing_pattern(ant_tracing_pattern_arg)
 		, counter_pheromone(counter_pheromone_arg)
@@ -301,7 +301,7 @@ struct Ant
 					const float coef = 0.01f;
 					delusion_counter = delusion_counter > 0 ? delusion_counter - 1.0f : 0;
 					const float intensity = 1000.0f * exp(-coef * (delusion_counter));
-					world.addMarker(position, Mode::CounterPhrBack, intensity);
+					world.addMarker(position, Mode::CounterPhr, intensity);
 					// std::cout<<intensity<<" ";
 				}
 			}

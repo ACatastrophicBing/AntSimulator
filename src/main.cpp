@@ -34,6 +34,11 @@
  * @param sim_config.patience_max_val_vec::	What is(are) the maximum value(s) for the counter pheromone?
  * @param sim_config.malicious_intensity_mult:: Multiplier for the intensity of the fake food pheromone
  * @param sim_config.malicious_evaporation_mult:: Multiplier for the evaporation of the fake food pheromone
+ * @param sim_config.malicious_start_uniform:: If we want a unfirom distribution of malicious ants for start
+ * @param sim_config.malicious_start_concentrated:: If we want a concentrated attack
+ * @param sim_config.malicious_concentrated_radius:: If concentrated and uniform, this will distribute in a circle
+ * @param sim_config.malicious_concentrated_x:: The x location of where our malicious ants start
+ * @param sim_config.malicious_concentrated_y:: The y location of where malicious ants start
  */
 struct SimulationConfiguration
 {
@@ -117,6 +122,16 @@ struct SimulationConfiguration
 
 	float malicious_evaporation_mult = 10.0;
 
+	bool malicious_start_concentrated = false;
+
+	bool malicious_start_uniform = false;
+
+	float malicious_concentrated_x = 0;
+
+	float malicious_concentrated_y = 0;
+
+	float malicious_concentrated_radius = 0;
+
 	AntTracingPattern malicious_tracing_pattern;
 
 	std::string csv_prefix;
@@ -192,11 +207,17 @@ void loadUserConf()
 		sim_config.malicious_fraction_food = malicious_element->FirstChildElement("fraction_food")->FloatAttribute("float");
 		sim_config.malicious_fraction_home = malicious_element->FirstChildElement("fraction_home")->FloatAttribute("float");
 		sim_config.malicious_focus = malicious_element->FirstChildElement("focus")->BoolAttribute("bool");
+		sim_config.malicious_start_concentrated = malicious_element->FirstChildElement("concentrated_attack")->BoolAttribute("bool");
+		sim_config.malicious_start_uniform = malicious_element->FirstChildElement("uniform_attack")->BoolAttribute("bool");
+		sim_config.malicious_concentrated_x = malicious_element->FirstChildElement("concentrated_x")->FloatAttribute("float");
+		sim_config.malicious_concentrated_y = malicious_element->FirstChildElement("concentrated_y")->FloatAttribute("float");
+		sim_config.malicious_concentrated_radius = malicious_element->FirstChildElement("concentrated_radius")->FloatAttribute("float");
 		sim_config.malicious_timer_wait = malicious_element->FirstChildElement("timer")->IntAttribute("int");
 		sim_config.malicious_intensity_mult = malicious_element->FirstChildElement("pheromone_intensity_multiplier")->FloatAttribute("float");
 		sim_config.malicious_evaporation_mult = malicious_element->FirstChildElement("pheromone_evaporation_multiplier")->FloatAttribute("float");
 		malicious_element->FirstChildElement("tracing_pattern")->QueryStringAttribute("type", &temp_str);
 		sim_config.ParseTracingPattern(std::string(temp_str));
+		
 
 		// Get CSV filepath
 		root->FirstChildElement("csv_output")->QueryStringAttribute("prefix", &temp_str);
@@ -297,7 +318,13 @@ void oneExperiment(int i)
 				  sim_config.malicious_focus,
 				  sim_config.malicious_tracing_pattern,
 				  sim_config.patience_activation,
-				  sim_config.malicious_intensity_mult);
+				  sim_config.malicious_intensity_mult,
+				  sim_config.malicious_start_uniform,
+				  sim_config.malicious_start_concentrated,
+				  sim_config.malicious_concentrated_radius,
+				  sim_config.malicious_concentrated_x,
+				  sim_config.malicious_concentrated_y
+				  );
 	initWorld(world, colony);
 
 	for (int j = 0; j < sim_config.sim_steps; j++)
@@ -368,7 +395,12 @@ void displaySimulation()
 				  sim_config.malicious_focus,
 				  sim_config.malicious_tracing_pattern,
 				  sim_config.patience_activation,
-				  sim_config.malicious_intensity_mult);
+				  sim_config.malicious_intensity_mult,
+				  sim_config.malicious_start_uniform,
+				  sim_config.malicious_start_concentrated,
+				  sim_config.malicious_concentrated_radius,
+				  sim_config.malicious_concentrated_x,
+				  sim_config.malicious_concentrated_y);
 
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 4;

@@ -6,6 +6,7 @@
 #include "ant.hpp"
 #include "utils.hpp"
 #include "world.hpp"
+#include <cmath>
 
 
 struct Colony
@@ -26,7 +27,7 @@ struct Colony
    */
 	Colony(float x, float y, uint32_t n, float mal_prob_food, float mal_prob_home, int mal_timer_delay, bool malicious_ants_focus = true, 
           AntTracingPattern ant_tracing_pattern = AntTracingPattern::RANDOM, bool counter_pheromone = false,
-          float hell_phermn_intensity_multiplier = 1.0)
+          float hell_phermn_intensity_multiplier = 1.0, bool uniform = false, bool concentrated = false, float concentrated_radius = 0, float concentrated_x = 0, float concentrated_y = 0 )
 		: position(x, y)
 		, last_direction_update(0.0f)
 		, ants_va(sf::Quads, 4 * n)
@@ -68,34 +69,35 @@ struct Colony
           float x_malicious = x;
           float y_malicious = y;
           bool is_Valid = false;
-          // while(!is_Valid) {
-          // if(Conf::UNIFORM){ /* TOFO : add something to the config file to select a placement scheme*/
+          if(uniform){ /* TOFO : add something to the config file to select a placement scheme*/
             std::random_device rd;  // Will be used to obtain a seed for the random number engine
             std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
             std::uniform_real_distribution<> disx(0.0, Conf::WIN_WIDTH);
             std::uniform_real_distribution<> disy(0.0, Conf::WIN_HEIGHT);
             x_malicious = (float)disx(gen);
             y_malicious = (float)disy(gen);
-          // }
+          }
 
-          // if(Conf::CONCENTRATED){ // TODO : Also add UNIFORM, UNIFORM_RADIUS, MAL_HOME_X, MAL_HOME_Y, TARGETED
-          //   x_malicious = Conf::MAL_HOME_X;
-          //   y_malicious = Conf::MAL_HOME_Y;
-          //   if(Conf::UNIFORM){
-          //     std::random_device rd;  // Will be used to obtain a seed for the random number engine
-          //     std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
-          //     std::uniform_real_distribution<> disx(0.0, x + Conf::UNIFORM_RADIUS);
-          //     std::uniform_real_distribution<> disy(0.0, 360.0);
-          //     // TODO : find the vector location of the above
-          //     x_malicious = x_malicious;
-          //     y_malicious = y_malicious;
-          //   }
-          // }
+          if(concentrated){ // TODO : Also add UNIFORM, UNIFORM_RADIUS, MAL_HOME_X, MAL_HOME_Y, TARGETED
+            if(concentrated_x == 0 || concentrated_y == 0){
+              x_malicious = x;
+              y_malicious = y;
+            } else {
+              x_malicious = concentrated_x * Conf::WIN_WIDTH;
+              y_malicious = concentrated_y * Conf::WIN_HEIGHT;
+            }
+            if(uniform){
+              std::random_device rd;  // Will be used to obtain a seed for the random number engine
+              std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+              std::uniform_real_distribution<> disr(0.0, x + concentrated_radius);
+              std::uniform_real_distribution<> disrad(0.0, 3.14159);
+              // TODO : find the vector location of the above
+              float direction = disrad(gen);
+              x_malicious = x_malicious + concentrated_radius * cos(direction);
+              y_malicious = y_malicious + concentrated_radius * sin(direction);
+            }
+          }
             
-          // is_Valid = true;
-          // TODO : Identify if a position is valid in world
-
-          // }
           if(i <= mal_prob_food*n) {// Place malicious food ant
             ants.emplace_back(x_malicious, y_malicious, angle, false, true, false, ant_tracing_pattern, hell_phermn_intensity_multiplier); 
           }
