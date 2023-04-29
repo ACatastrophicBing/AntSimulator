@@ -44,6 +44,18 @@ struct SimulationConfiguration
 {
 	SimulationConfiguration(){};
 
+	void ParseEvapRateVec(const std::string &str_arr)
+	{
+		std::istringstream ss(str_arr);
+		float val;
+		while (ss >> val)
+		{
+			evap_rate_vec.push_back(val);
+		}
+
+		evap_rate_itr = evap_rate_vec.begin();
+	};
+	
 	void ParsePatienceRefillPeriodVec(const std::string &str_arr)
 	{
 		std::istringstream ss(str_arr);
@@ -104,9 +116,13 @@ struct SimulationConfiguration
 
 	std::vector<float> patience_refill_period_vec;
 
+	std::vector<float> evap_rate_vec;
+
 	std::vector<float>::const_iterator patience_max_val_itr;
 
 	std::vector<float>::const_iterator patience_refill_period_itr;
+
+	std::vector<float>::const_iterator evap_rate_itr;
 
 	float patience_evaporation_mult = 1.0;
 
@@ -120,7 +136,7 @@ struct SimulationConfiguration
 
 	float malicious_intensity_mult = 1;
 
-	float malicious_evaporation_mult = 10.0;
+	// float malicious_evaporation_mult = 10.0;
 
 	bool malicious_start_concentrated = false;
 
@@ -153,7 +169,7 @@ std::string getExperimentSpecificName(int iteration)
 	std::string ant_tracing_pattern_string = "_ant_tracing-" + std::to_string(sim_config.malicious_tracing_pattern);
 	std::string counter_pheromone_string = "_ctr_pherm-" + std::to_string(sim_config.patience_activation);
 	std::string hell_phermn_intensity_multiplier_string = "_hell_phermn_intens-" + std::to_string(sim_config.malicious_intensity_mult);
-	std::string hell_phermn_evpr_multi_string = "_hell_phermn_evpr-" + std::to_string(sim_config.malicious_evaporation_mult);
+	std::string hell_phermn_evpr_multi_string = "_hell_phermn_evpr-" + std::to_string(*sim_config.evap_rate_itr);
 	std::string delusion_max_string = "_del_max-" + std::to_string(*sim_config.patience_max_val_itr);
 	std::string delusion_increment_string = "_del_incr-" + std::to_string(*sim_config.patience_refill_period_itr);
 	std::string iteration_string = "_iter-" + std::to_string(iteration);
@@ -200,6 +216,7 @@ void loadUserConf()
 		sim_config.ParsePatienceRefillPeriodVec(std::string(temp_str));
 		patience_element->FirstChildElement("max_range")->QueryStringAttribute("str_arr", &temp_str);
 		sim_config.ParseMaxPatienceVec(std::string(temp_str));
+		
 		sim_config.patience_evaporation_mult = patience_element->FirstChildElement("pheromone_evaporation_multiplier")->FloatAttribute("float");
 
 		// Get malicious ants settings
@@ -214,7 +231,11 @@ void loadUserConf()
 		sim_config.malicious_concentrated_radius = malicious_element->FirstChildElement("concentrated_radius")->FloatAttribute("float");
 		sim_config.malicious_timer_wait = malicious_element->FirstChildElement("timer")->IntAttribute("int");
 		sim_config.malicious_intensity_mult = malicious_element->FirstChildElement("pheromone_intensity_multiplier")->FloatAttribute("float");
-		sim_config.malicious_evaporation_mult = malicious_element->FirstChildElement("pheromone_evaporation_multiplier")->FloatAttribute("float");
+		
+		// sim_config.malicious_evaporation_mult = malicious_element->FirstChildElement("pheromone_evaporation_multiplier")->FloatAttribute("float");
+		malicious_element->FirstChildElement("pheromone_evaporation_multiplier")->QueryStringAttribute("str_arr", &temp_str);
+		sim_config.ParseEvapRateVec(std::string(temp_str));
+
 		malicious_element->FirstChildElement("tracing_pattern")->QueryStringAttribute("type", &temp_str);
 		sim_config.ParseTracingPattern(std::string(temp_str));
 		
@@ -233,7 +254,7 @@ void loadUserConf()
 
 void setStaticVariables()
 {
-	WorldCell::setHellPhermnEvprMulti(sim_config.malicious_evaporation_mult);
+	WorldCell::setHellPhermnEvprMulti(*sim_config.evap_rate_itr);
 	Ant::resetFoodBitsCounters();
 	Ant::setDelusionMax(*sim_config.patience_max_val_itr);
 	Ant::setDelusionIncrement((*sim_config.patience_max_val_itr) / (*sim_config.patience_refill_period_itr));
@@ -346,12 +367,15 @@ void oneExperiment(int i)
 
 void simulateAnts()
 {
+	std::cout << "Simulating ants" << std::endl;
+	
 	/**
 	 * @brief This loop will start a new colony and run the sim for sim_config.sim_steps number of steps for each trial
 	 */
 	// Iterate through number of trials/iterations
 	for (int i = 0; i < sim_config.sim_iterations; i++)
 	{
+		std::cout << "For loop #1" << std::endl;
 		/*
 			The following nested loops are constructed the way they are because of the original code's
 			dependency on global variables. Specifically, the `setStaticVariables()` function uses global
@@ -364,12 +388,20 @@ void simulateAnts()
 		// Iterate through all max patience pheromone values
 		for (auto &itr = sim_config.patience_max_val_itr; itr != sim_config.patience_max_val_vec.end(); ++itr)
 		{
+			std::cout << "For loop #2" << std::endl;
 			// Iterate through all patience refill period values
 			for (auto &itr = sim_config.patience_refill_period_itr; itr != sim_config.patience_refill_period_vec.end(); ++itr)
 			{
-				oneExperiment(i); // run single experiment trial
+				std::cout << "For loop #3" << std::endl;
+				// Iterate through all evap rate values
+				for (auto &itr = sim_config.evap_rate_itr; itr != sim_config.evap_rate_vec.end(); ++itr)
+				{
+					std::cout << "For loop #4" << std::endl;
+					oneExperiment(i); // run single experiment trial
+				}
+				sim_config.evap_rate_itr = sim_config.evap_rate_vec.begin();
 			}
-
+			
 			sim_config.patience_refill_period_itr = sim_config.patience_refill_period_vec.begin();
 		}
 
