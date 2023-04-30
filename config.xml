@@ -1,36 +1,36 @@
 <?xml version="1.1" encoding="UTF-8"?>
 <antsim>
     <gui>
-        <activate bool="true" /> <!-- activate GUI -->
+        <activate bool="false" /> <!-- activate GUI -->
         <fullscreen bool="true" /> <!-- enter fullscreen mode -->
     </gui>
     <simulation>
         <map path="map.bmp" /> <!-- path to the food map image relative to this config file -->
-        <steps int="500" /> <!-- number of simulation steps -->
-        <iterations int="20" /> <!-- number of trials to repeat -->
+        <steps int="50000" /> <!-- number of simulation steps -->
+        <iterations int="10" /> <!-- number of trials to repeat -->
     </simulation>
     <total_ants>
         <number int="1024" /> <!-- number of ants to simulatate in total -->
     </total_ants>
     <patience>
         <activate bool="true" /> <!-- activate patience/cautionary pheromone secretion-->
-        <refill_period_range str_arr="500" /> <!-- period to reach max refill amount, in units of timesteps; multiple values possible (space delimited) -->
-        <max_range str_arr="500" /> <!-- maximum patience/cautionary pheromone possible; multiple values possible (space delimited) -->
+        <refill_period_range str_arr="1 10 100 1000" /> <!-- period to reach max refill amount, in units of timesteps; multiple values possible (space delimited) -->
+        <max_range str_arr="50 100 500 1000" /> <!-- maximum patience/cautionary pheromone possible; multiple values possible (space delimited) -->
         <pheromone_evaporation_multiplier float="1000" /> <!-- patience/cautionary pheromone evaporation rate -->
     </patience>
     <malicious_ants>
-        <fraction_food float="0.04" /> <!-- fraction of ants that are malicious falsifying food -->
-        <fraction_home float="0.01" /> <!-- fraction of ants that are malicious falsifying home -->
+        <fraction_food float="0.05" /> <!-- fraction of ants that are malicious falsifying food -->
+        <fraction_home float="0.0" /> <!-- fraction of ants that are malicious falsifying home -->
         <focus bool="false" /> <!-- activate malicious ants' focus on the food source -->
         <timer int="100" /> <!-- delay after which the attack is launched -->
         <pheromone_intensity_multiplier float="1" /> <!-- fake food pheromone intensity factor -->
-        <pheromone_evaporation_multiplier float="1.0" /> <!-- fake food pheromone evaporation rate -->
-        <tracing_pattern type="RANDOM" /> <!-- decide whether the mal. ants follow a specific type of pheromone; choose either: FOOD, HOME or RANDOM -->
-        <uniform_attack bool="true" /> <!-- Decide if we want a uniform attack -->
+        <pheromone_evaporation_multiplier float="2.0" /> <!-- fake food pheromone evaporation rate -->
+        <tracing_pattern type="FOOD" /> <!-- decide whether the mal. ants follow a specific type of pheromone; choose either: FOOD, HOME or RANDOM -->
+        <uniform_attack bool="false" /> <!-- Decide if we want a uniform attack -->
         <concentrated_attack bool="true" /> <!-- Decide if ants attack in concentrated location -->
         <concentrated_x float="0.25" /> <!-- Location on screen to place malicious ants in %, 0 is left side of screen, 1 is right side, range is 0 to 1-->
         <concentrated_y float="0.25" /> <!-- Location on screen to place malicious ants in, 0 is bottom, 1 is top of screen -->
         <concentrated_radius float="20" /> <!-- The radius to place malicious ants around target location in pixels -->
     </malicious_ants>
-    <csv_output prefix="data/test" /> <!-- CSV output file prefix -->
+    <csv_output prefix="data_defense_targeted_food/test" /> <!-- CSV output file prefix -->
 </antsim>
