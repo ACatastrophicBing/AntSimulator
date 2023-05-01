@@ -24,7 +24,7 @@
         <focus bool="false" /> <!-- activate malicious ants' focus on the food source -->
         <timer int="100" /> <!-- delay after which the attack is launched -->
         <pheromone_intensity_multiplier float="1" /> <!-- fake food pheromone intensity factor -->
-        <pheromone_evaporation_multiplier float="2.0" /> <!-- fake food pheromone evaporation rate -->
+        <pheromone_evaporation_multiplier float="8.0" /> <!-- fake food pheromone evaporation rate -->
         <tracing_pattern type="FOOD" /> <!-- decide whether the mal. ants follow a specific type of pheromone; choose either: FOOD, HOME or RANDOM -->
         <uniform_attack bool="false" /> <!-- Decide if we want a uniform attack -->
         <concentrated_attack bool="true" /> <!-- Decide if ants attack in concentrated location -->
