@@ -4,7 +4,7 @@ import pandas as pd
 import seaborn as sns
 import glob
 
-path = r'./data_food_home_targeted' # use your path
+path = r'./data_targeted_food' # use your path
 evapor_set = [0.0,2.0,4.0,6.0,8.0]
 evapor_set.reverse()
 mal_frac_set = [0.005, 0.01, 0.05, 0.1, 0.5]
@@ -24,7 +24,7 @@ for i, e in enumerate(evapor_set):
         count = 0
 
         for file in all_files:
-            if ("mal_frac_home-"+str(m/2)) in file:
+            if ("mal_frac_food-"+str(m)) in file:
                 if ("evpr-"+str(e)) in file:
                     dt = np.array(pd.read_csv(file, header=None))
                     modified_data = dt[-1]
@@ -72,4 +72,4 @@ for i,ax in enumerate(axn.flat):
 
 plt.rcParams.update({'font.size': 22})
 plt.show()
-plot.figure.savefig("final_heatmaps/heatmap_targeted_food_home.png")
+plot.figure.savefig("final_heatmaps/heatmap_targeted_food.png")

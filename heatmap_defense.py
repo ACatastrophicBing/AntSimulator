@@ -4,7 +4,7 @@ import pandas as pd
 import seaborn as sns
 import glob
 
-path = r'./data_defense_targeted_home' # use your path
+path = r'./data_defense_targeted_food_2' # use your path
 patience_thresh = [50, 100, 500, 1000]
 patience_thresh.reverse()
 patience_refill = [1, 10, 100, 1000]
@@ -61,12 +61,15 @@ cbar_mins = [0, 0, 0, 0]
 cbar_maxs = [np.amax(spec_data[:,:,0]), np.amax(spec_data[:,:,1]), 1.0, 1.0]
 
 for i,ax in enumerate(axn.flat):
-    if(i%2==0):
-        df[i] = df[i].rename_axis("Maximum Patience Threshold")
-    if(i>1):
-        df[i] = df[i].rename_axis("Patience Refill Steps", axis=1)
+    # if(i%2==0):
+    #     df[i] = df[i].rename_axis("Maximum Patience Threshold")
+    # if(i>1):
+    #     df[i] = df[i].rename_axis("Patience Refill Steps", axis=1)
+    df[i] = df[i].rename_axis("Maximum Patience Threshold")
+    df[i] = df[i].rename_axis("Patience Refill Steps", axis=1)
     color = color_blue if i<2 else color_green
     plot = sns.heatmap(df[i], vmin=cbar_mins[i], vmax=cbar_maxs[i], ax=ax, xticklabels = y, yticklabels = x, cmap=color, cbar=True)#not(i%2==0))
     # plt.xticks(rotation = 45)
 
-plot.figure.savefig("final_heatmaps/heatmap_defense_targeted_home.png")
+plt.show()
+plot.figure.savefig("final_heatmaps/heatmap_defense_targeted_food.png")
